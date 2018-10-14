@@ -1,0 +1,15 @@
+{
+  "name": "voice-assist",
+  "version": "1.0.0",
+  "description": "Voice Assist demo.",
+  "author": "Wenbo Jie <pinkyjie.gn@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "lerna": "lerna",
+    "sls": "serverless"
+  },
+  "devDependencies": {
+    "lerna": "^3.4.3",
+    "serverless": "^1.32.0"
+  }
+}
