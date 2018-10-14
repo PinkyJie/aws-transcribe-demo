@@ -1,4 +1,8 @@
 {
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "name": "voice-assist",
   "version": "1.0.0",
   "description": "Voice Assist demo.",
@@ -8,8 +12,25 @@
     "lerna": "lerna",
     "sls": "serverless"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,json,css,md}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
   "devDependencies": {
+    "husky": "^1.1.2",
     "lerna": "^3.4.3",
-    "serverless": "^1.32.0"
+    "lint-staged": "^7.3.0",
+    "prettier": "1.14.3",
+    "serverless": "^1.32.0",
+    "serverless-offline": "^3.27.0",
+    "serverless-webpack": "^5.2.0",
+    "webpack": "^4.20.2"
   }
 }

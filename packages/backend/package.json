@@ -2,5 +2,9 @@
   "name": "voice-assist-backend",
   "version": "1.0.0",
   "description": "serverless functions for Voice Assist.",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "ts-loader": "^5.2.1",
+    "typescript": "^3.1.3"
+  }
 }
