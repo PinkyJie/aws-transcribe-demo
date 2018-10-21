@@ -1,6 +1,6 @@
 {
   "name": "voice-assist-backend",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "serverless functions for Voice Assist.",
   "license": "MIT",
   "scripts": {
