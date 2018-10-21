@@ -25,9 +25,5 @@
     "aws-lambda": "^0.1.2",
     "aws-sdk": "^2.334.0",
     "uuid": "^3.3.2"
-  },
-  "prettier": {
-    "trailingComma": "es5",
-    "singleQuote": true
   }
 }
