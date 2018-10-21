@@ -1,6 +1,13 @@
 {
   "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es6",
+    "noImplicitAny": true,
+    "moduleResolution": "node",
     "sourceMap": true,
-    "lib": ["es5", "es6", "dom", "es2015", "esnext.asynciterable"]
-  }
+    "outDir": "dist",
+    "baseUrl": "."
+  },
+  "include": ["src/**/*"]
 }

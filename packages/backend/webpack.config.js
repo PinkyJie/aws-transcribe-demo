@@ -1,27 +1,31 @@
-const path = require("path");
-const slsw = require("serverless-webpack");
+const path = require('path');
+const { CheckerPlugin } = require('awesome-typescript-loader');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 module.exports = {
-    entry: slsw.lib.entries,
-    resolve: {
-        extensions: [".ts"]
+    entry: {
+        getAudios: './src/handlers/getAudios.ts',
+        newAudio: './src/handlers/newAudio.ts',
+        transcribeAudio: './src/handlers/transcribeAudio.ts',
     },
     output: {
-        libraryTarget: "commonjs",
-        path: path.join(__dirname, ".webpack"),
-        filename: "[name].js"
+        filename: '[name].js',
+        path: path.resolve(__dirname, 'dist'),
+        library: 'index',
+        libraryTarget: 'commonjs2',
     },
-    target: "node",
+    resolve: {
+        extensions: ['.ts', '.js'],
+    },
+    target: 'async-node',
     module: {
         rules: [
             {
-                test: /\.ts(x?)$/,
-                use: [
-                    {
-                        loader: "ts-loader"
-                    }
-                ]
-            }
-        ]
-    }
+                test: /\.ts$/,
+                loader: 'awesome-typescript-loader',
+            },
+        ],
+    },
+    plugins: [new CleanWebpackPlugin(['dist']), new CheckerPlugin()],
+    mode: 'production',
 };

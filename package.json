@@ -9,8 +9,7 @@
   "author": "Wenbo Jie <pinkyjie.gn@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "lerna": "lerna",
-    "sls": "serverless"
+    "lerna": "lerna"
   },
   "husky": {
     "hooks": {
@@ -28,9 +27,8 @@
     "lerna": "^3.4.3",
     "lint-staged": "^7.3.0",
     "prettier": "1.14.3",
-    "serverless": "^1.32.0",
-    "serverless-offline": "^3.27.0",
-    "serverless-webpack": "^5.2.0",
-    "webpack": "^4.20.2"
+    "tslint": "^5.11.0",
+    "tslint-config-prettier": "^1.15.0",
+    "typescript": "^3.1.3"
   }
 }
