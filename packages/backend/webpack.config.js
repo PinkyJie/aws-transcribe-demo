@@ -7,6 +7,7 @@ module.exports = {
         getAudios: './src/handlers/getAudios.ts',
         newAudio: './src/handlers/newAudio.ts',
         transcribeAudio: './src/handlers/transcribeAudio.ts',
+        getToken: './src/handlers/getToken.ts',
     },
     output: {
         filename: '[name].js',

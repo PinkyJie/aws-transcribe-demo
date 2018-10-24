@@ -8,7 +8,9 @@
   "description": "Voice Assist demo.",
   "author": "Wenbo Jie <pinkyjie.gn@gmail.com>",
   "scripts": {
-    "lerna": "lerna"
+    "lerna": "lerna",
+    "build": "lerna run build",
+    "deploy": "lerna run deploy"
   },
   "husky": {
     "hooks": {

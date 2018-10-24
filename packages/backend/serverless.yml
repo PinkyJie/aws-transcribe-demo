@@ -3,9 +3,14 @@ service: voice-assist
 plugins:
   - serverless-plugin-scripts
   - serverless-offline
+  - serverless-stack-output
 
 custom:
+  # this will write cloudformation output into a separate file
+  output:
+    file: ../frontend/src/stack.json
   AudioFileBucketName: voice-assist-${self:provider.stage}-audio-file-bucket
+  UploadToS3RolePolicyName: voice-assist-${self:provider.stage}-upload-to-s3-policy
   scripts:
     hooks:
       'before:deploy:createDeploymentArtifacts': yarn build
@@ -44,8 +49,28 @@ provider:
     - Effect: Allow
       Action: s3:*
       Resource: '*'
+    - Effect: Allow
+      Action: sts:AssumeRole
+      Resource: '*'
 
 functions:
+  GetToken:
+    description: Function to generate a temporary access credential for frontend to upload file to S3.
+    tags:
+      appName: VoiceAssist
+    handler: dist/getToken.handler
+    package:
+      exclude:
+        - '**'
+        - '!dist/getToken.js'
+    events:
+      - http:
+          path: token
+          method: get
+          cors: true
+    environment:
+      ROLE_ARN:
+        Fn::GetAtt: [UploadToS3Role, Arn]
   NewAudio:
     description: Function to insert audio record to DynamoDB after S3 upload.
     tags:
@@ -97,22 +122,99 @@ functions:
         Ref: TranscribedTextFileBucket
 resources:
   Resources:
+    # role for frontend to upload file to S3
+    UploadToS3Role:
+      Type: 'AWS::IAM::Role'
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: 'Allow'
+              Principal:
+                AWS:
+                  Fn::Join:
+                    - ''
+                    - - 'arn:aws:sts::'
+                      - Ref: AWS::AccountId
+                      - ':assumed-role/'
+                      # role created by serverless
+                      - Ref: IamRoleLambdaExecution
+                      - '/'
+                      # GetToken lambda function created by serverless
+                      - voice-assist-${self:provider.stage}-GetToken
+              Action:
+                - 'sts:AssumeRole'
+        Policies:
+          - PolicyName: ${self:custom.UploadToS3RolePolicyName}
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: 'Allow'
+                  Action: 's3:PutObject'
+                  Resource:
+                    - Fn::GetAtt: [S3BucketVoiceassistdevaudiofilebucket, Arn]
     # static website hosting
     StaticWebsiteBucket:
       Type: AWS::S3::Bucket
       Properties:
-        AccessControl: PublicRead
         WebsiteConfiguration:
           IndexDocument: index.html
           ErrorDocument: error.html
         Tags:
           - Key: appName
             Value: VoiceAssist
+    StaticWebsiteBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket:
+          Ref: StaticWebsiteBucket
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal: '*'
+              Action:
+                - s3:GetObject
+              Resource:
+                Fn::Join:
+                  - ''
+                  - - 'arn:aws:s3:::'
+                    - Ref: StaticWebsiteBucket
+                    - '/*'
+    # the same bucket triggers lambda created by serverless
+    S3BucketVoiceassistdevaudiofilebucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        CorsConfiguration:
+          CorsRules:
+            - AllowedMethods:
+                - PUT
+              AllowedOrigins:
+                - Fn::GetAtt: [StaticWebsiteBucket, WebsiteURL]
+              AllowedHeader: '*'
+        Tags:
+          - Key: appName
+            Value: VoiceAssist
+    AudioFileBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket:
+          Ref: S3BucketVoiceassistdevaudiofilebucket
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal: '*'
+              Action:
+                - s3:GetObject
+              Resource:
+                Fn::Join:
+                  - ''
+                  - - 'arn:aws:s3:::'
+                    - Ref: S3BucketVoiceassistdevaudiofilebucket
+                    - '/*'
     # store transcribed text files
     TranscribedTextFileBucket:
       Type: AWS::S3::Bucket
       Properties:
-        AccessControl: PublicRead
         CorsConfiguration:
           CorsRules:
             - AllowedMethods:
@@ -122,6 +224,23 @@ resources:
         Tags:
           - Key: appName
             Value: VoiceAssist
+    TranscribedTextFileBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket:
+          Ref: TranscribedTextFileBucket
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal: '*'
+              Action:
+                - s3:GetObject
+              Resource:
+                Fn::Join:
+                  - ''
+                  - - 'arn:aws:s3:::'
+                    - Ref: TranscribedTextFileBucket
+                    - '/*'
     # store file processing status
     AudiosTable:
       Type: AWS::DynamoDB::Table
@@ -138,3 +257,9 @@ resources:
         Tags:
           - Key: appName
             Value: VoiceAssist
+  Outputs:
+    # bucket name required by frontend
+    AudioFileBucketName:
+      Value:
+        Ref: S3BucketVoiceassistdevaudiofilebucket
+    # ServiceEndpoint will be output automatically by serverless
