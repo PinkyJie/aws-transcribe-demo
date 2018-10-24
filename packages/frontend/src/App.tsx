@@ -8,33 +8,51 @@ import {
     Container,
     Message,
     Popup,
+    Loader,
+    Modal,
 } from 'semantic-ui-react';
 import axios from 'axios';
+import { S3, STS, config, Credentials } from 'aws-sdk';
 
 import './App.css';
 import { AudioRecord, TranscriptionJSON } from './types';
+import stackOutput from './stack.json';
 
 export interface AppProps {}
 
 export interface AppState {
+    uploading: boolean;
     searchText: string;
     searchResults: AudioRecord[];
     transcription?: TranscriptionJSON['results'];
+    showModal: boolean;
+    modalHeader: string;
+    modalContent: string;
 }
-
-const URL = 'https://rs010w8d4d.execute-api.ap-southeast-2.amazonaws.com/dev';
 
 export class App extends React.Component<{}, AppState> {
     constructor(props: {}) {
         super(props);
         this.state = {
+            showModal: false,
+            modalHeader: '',
+            modalContent: '',
+            uploading: false,
             searchText: '',
             searchResults: [],
         };
     }
 
     public render() {
-        const { searchText, searchResults, transcription } = this.state;
+        const {
+            uploading,
+            searchText,
+            searchResults,
+            transcription,
+            showModal,
+            modalHeader,
+            modalContent,
+        } = this.state;
         return (
             <div className="App">
                 <header className="App-header">
@@ -49,12 +67,14 @@ export class App extends React.Component<{}, AppState> {
                                 label="Upload audio(*.mp3)"
                                 onChange={this.handleFileUpload}
                             />
+                            <Loader active={uploading} inline />
                         </Form.Group>
                     </Form>
                     <Header as="h2">Check transcription status</Header>
                     <Form>
                         <Form.Group inline>
                             <Form.Input
+                                label="Search audio transcription status"
                                 action={{
                                     color: 'teal',
                                     icon: 'search',
@@ -96,6 +116,24 @@ export class App extends React.Component<{}, AppState> {
                         </Segment>
                     )}
                 </div>
+                <Modal
+                    open={showModal}
+                    header={modalHeader}
+                    content={modalContent}
+                    actions={[
+                        {
+                            key: 'done',
+                            content: 'OK',
+                            positive: true,
+                            onClick: () => {
+                                this.setState({
+                                    showModal: false,
+                                    uploading: false,
+                                });
+                            },
+                        },
+                    ]}
+                />
             </div>
         );
     }
@@ -198,13 +236,67 @@ export class App extends React.Component<{}, AppState> {
     }
 
     private handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        console.log(e.target.files);
+        e.persist();
+        const files = e.target.files;
+        if (files && files.length > 0) {
+            if (!files[0].name.match(/\.mp3$/)) {
+                this.setState({
+                    showModal: true,
+                    modalHeader: 'File format is not supported.',
+                    modalContent: 'Please upload mp3 file only!',
+                });
+                return;
+            }
+            // get temporary token for S3 uploading
+            axios
+                .get<STS.Credentials>(`${stackOutput.ServiceEndpoint}/token`)
+                .then(result => {
+                    this.setState({
+                        uploading: true,
+                    });
+                    config.credentials = new Credentials(
+                        result.data.AccessKeyId,
+                        result.data.SecretAccessKey,
+                        result.data.SessionToken
+                    );
+                    const params = {
+                        Body: files[0],
+                        Bucket: stackOutput.AudioFileBucketName,
+                        Key: files[0].name,
+                        ServerSideEncryption: 'AES256',
+                        ContentType: 'audio/mpeg',
+                    };
+                    const s3 = new S3();
+                    s3.putObject(params)
+                        .promise()
+                        .then(() => {
+                            this.setState({
+                                showModal: true,
+                                modalHeader: 'Uploading done!',
+                                modalContent:
+                                    'You can search below to track your audio transcription status.',
+                            });
+                            e.target.value = '';
+                        })
+                        .catch(() => {
+                            this.setState({
+                                showModal: true,
+                                modalHeader: 'Uploading failed!',
+                                modalContent: 'Please try again later.',
+                            });
+                            e.target.value = '';
+                        });
+                });
+        }
     };
 
     private handleSearch = () => {
         const { searchText } = this.state;
         axios
-            .get<AudioRecord[]>(`${URL}/audios?recordId=${searchText || '*'}`)
+            .get<AudioRecord[]>(
+                `${stackOutput.ServiceEndpoint}/audios?recordId=${searchText ||
+                    '*'}`
+            )
             .then(results => {
                 this.setState({ searchResults: results.data });
             });

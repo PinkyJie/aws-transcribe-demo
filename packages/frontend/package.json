@@ -1,8 +1,9 @@
 {
-  "name": "frontend",
+  "name": "voice-assist-frontend",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "aws-sdk": "^2.340.0",
     "axios": "^0.18.0",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
