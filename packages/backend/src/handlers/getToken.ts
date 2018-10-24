@@ -4,7 +4,7 @@ import {
     APIGatewayProxyEvent,
     APIGatewayProxyResult,
 } from 'aws-lambda';
-import { STS } from 'aws-sdk';
+import { S3 } from 'aws-sdk';
 
 export const handler = async (
     event: APIGatewayProxyEvent,
@@ -12,19 +12,20 @@ export const handler = async (
 ): Promise<APIGatewayProxyResult> => {
     console.log(event);
 
-    const sts = new STS();
-    const role = await sts
-        .assumeRole({
-            RoleArn: process.env.ROLE_ARN,
-            RoleSessionName: uuid.v1(),
-            DurationSeconds: 1800,
-        })
-        .promise();
+    const s3 = new S3();
+    const presignedData = await s3.createPresignedPost({
+        Bucket: process.env.BUCKET_NAME,
+        Fields: {
+            key: event.queryStringParameters.key,
+            'Content-Type': 'audio/mpeg',
+        },
+        Expires: 900,
+    });
 
-    console.log('role:', role);
+    console.log('presign:', presignedData);
 
     return {
-        body: JSON.stringify(role.Credentials),
+        body: JSON.stringify(presignedData),
         headers: {
             'Access-Control-Allow-Origin': '*', // Required for CORS support to work
             'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS

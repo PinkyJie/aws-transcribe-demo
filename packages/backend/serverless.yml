@@ -49,9 +49,6 @@ provider:
     - Effect: Allow
       Action: s3:*
       Resource: '*'
-    - Effect: Allow
-      Action: sts:AssumeRole
-      Resource: '*'
 
 functions:
   GetToken:
@@ -69,8 +66,8 @@ functions:
           method: get
           cors: true
     environment:
-      ROLE_ARN:
-        Fn::GetAtt: [UploadToS3Role, Arn]
+      BUCKET_NAME:
+        Ref: S3BucketVoiceassistdevaudiofilebucket
   NewAudio:
     description: Function to insert audio record to DynamoDB after S3 upload.
     tags:
@@ -122,37 +119,6 @@ functions:
         Ref: TranscribedTextFileBucket
 resources:
   Resources:
-    # role for frontend to upload file to S3
-    UploadToS3Role:
-      Type: 'AWS::IAM::Role'
-      Properties:
-        AssumeRolePolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-            - Effect: 'Allow'
-              Principal:
-                AWS:
-                  Fn::Join:
-                    - ''
-                    - - 'arn:aws:sts::'
-                      - Ref: AWS::AccountId
-                      - ':assumed-role/'
-                      # role created by serverless
-                      - Ref: IamRoleLambdaExecution
-                      - '/'
-                      # GetToken lambda function created by serverless
-                      - voice-assist-${self:provider.stage}-GetToken
-              Action:
-                - 'sts:AssumeRole'
-        Policies:
-          - PolicyName: ${self:custom.UploadToS3RolePolicyName}
-            PolicyDocument:
-              Version: '2012-10-17'
-              Statement:
-                - Effect: 'Allow'
-                  Action: 's3:PutObject'
-                  Resource:
-                    - Fn::GetAtt: [S3BucketVoiceassistdevaudiofilebucket, Arn]
     # static website hosting
     StaticWebsiteBucket:
       Type: AWS::S3::Bucket
@@ -187,6 +153,7 @@ resources:
         CorsConfiguration:
           CorsRules:
             - AllowedMethods:
+                - POST
                 - PUT
               AllowedOrigins:
                 - Fn::GetAtt: [StaticWebsiteBucket, WebsiteURL]

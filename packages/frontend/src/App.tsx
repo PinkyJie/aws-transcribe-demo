@@ -12,7 +12,7 @@ import {
     Modal,
 } from 'semantic-ui-react';
 import axios from 'axios';
-import { S3, STS, config, Credentials } from 'aws-sdk';
+import { S3 } from 'aws-sdk';
 
 import './App.css';
 import { AudioRecord, TranscriptionJSON } from './types';
@@ -249,26 +249,25 @@ export class App extends React.Component<{}, AppState> {
             }
             // get temporary token for S3 uploading
             axios
-                .get<STS.Credentials>(`${stackOutput.ServiceEndpoint}/token`)
+                .get<S3.PresignedPost>(
+                    `${stackOutput.ServiceEndpoint}/token?key=${files[0].name}`
+                )
                 .then(result => {
                     this.setState({
                         uploading: true,
                     });
-                    config.credentials = new Credentials(
-                        result.data.AccessKeyId,
-                        result.data.SecretAccessKey,
-                        result.data.SessionToken
-                    );
-                    const params = {
-                        Body: files[0],
-                        Bucket: stackOutput.AudioFileBucketName,
-                        Key: files[0].name,
-                        ServerSideEncryption: 'AES256',
-                        ContentType: 'audio/mpeg',
-                    };
-                    const s3 = new S3();
-                    s3.putObject(params)
-                        .promise()
+                    const formData = new FormData();
+                    Object.keys(result.data.fields).forEach(fieldName => {
+                        formData.set(fieldName, result.data.fields[fieldName]);
+                    });
+                    formData.append('file', files[0]);
+
+                    axios
+                        .post(result.data.url, formData, {
+                            headers: {
+                                'Content-Type': 'multipart/form-data',
+                            },
+                        })
                         .then(() => {
                             this.setState({
                                 showModal: true,
