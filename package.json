@@ -9,7 +9,6 @@
   "author": "Wenbo Jie <pinkyjie.gn@gmail.com>",
   "scripts": {
     "lerna": "lerna",
-    "build": "lerna run build",
     "deploy": "lerna run deploy"
   },
   "husky": {

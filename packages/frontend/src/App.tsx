@@ -83,8 +83,9 @@ export class App extends React.Component<{}, AppState> {
                                 }}
                                 value={searchText}
                                 onChange={this.handleSearchTextChange}
-                                placeholder="Record id to search"
+                                placeholder="Record ID"
                             />
+                            <label>(leave empty to show all)</label>
                         </Form.Group>
                     </Form>
                     {searchResults.length > 0 && (

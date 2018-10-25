@@ -157,7 +157,8 @@ resources:
                 - PUT
               AllowedOrigins:
                 - Fn::GetAtt: [StaticWebsiteBucket, WebsiteURL]
-              AllowedHeader: '*'
+              AllowedHeaders:
+                - '*'
         Tags:
           - Key: appName
             Value: VoiceAssist
@@ -225,8 +226,12 @@ resources:
           - Key: appName
             Value: VoiceAssist
   Outputs:
-    # bucket name required by frontend
+    # bucket name to upload audio files
     AudioFileBucketName:
       Value:
         Ref: S3BucketVoiceassistdevaudiofilebucket
+    # bucket name to upload frontend files
+    StaticWebsiteBucketName:
+      Value:
+        Ref: StaticWebsiteBucket
     # ServiceEndpoint will be output automatically by serverless
