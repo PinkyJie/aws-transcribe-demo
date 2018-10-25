@@ -2,6 +2,8 @@
 
 A simple AWS demo utilizes Amazon Transcribe to convert audio to text and do analyze.
 
+![](./frontend.png)
+
 ## Deploy to your own AWS
 
 - Setup AWS CLI and credential configuration.
