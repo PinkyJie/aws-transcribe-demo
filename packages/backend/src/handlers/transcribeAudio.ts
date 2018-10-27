@@ -29,11 +29,13 @@ export const handler = async (
 
     // start transcribe
     const transcribe = new TranscribeService();
+    const filePathParts = audioItem.Item.audioUrl.split('.');
+    const fileExt = filePathParts[filePathParts.length - 1].toLowerCase();
     const job = await transcribe
         .startTranscriptionJob({
             TranscriptionJobName: recordId,
             LanguageCode: 'en-US',
-            MediaFormat: 'mp3',
+            MediaFormat: fileExt,
             Media: {
                 MediaFileUri: audioItem.Item.audioUrl,
             },

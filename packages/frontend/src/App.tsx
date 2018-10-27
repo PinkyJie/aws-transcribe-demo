@@ -31,6 +31,8 @@ export interface AppState {
 }
 
 export class App extends React.Component<{}, AppState> {
+    private regex = /^(.*)\.(mp3|MP3|wav|WAV)$/;
+
     constructor(props: {}) {
         super(props);
         this.state = {
@@ -64,10 +66,10 @@ export class App extends React.Component<{}, AppState> {
                         <Form.Group inline>
                             <Form.Input
                                 type="file"
-                                label="Upload audio(*.mp3)"
+                                label="Select audio from local(*.mp3/wav)"
                                 onChange={this.handleFileUpload}
                             />
-                            <Loader active={uploading} inline />
+                            <Loader active={uploading} />
                         </Form.Group>
                     </Form>
                     <Header as="h2">Check transcription status</Header>
@@ -139,10 +141,24 @@ export class App extends React.Component<{}, AppState> {
         );
     }
 
-    private getAudioFileName(audioUrl: string) {
+    private getAudioFileName(audioUrl?: string) {
         if (audioUrl) {
             const parts = audioUrl.split('/');
             return parts[parts.length - 1];
+        }
+        return '';
+    }
+
+    private getAudioType(fileName: string) {
+        if (fileName) {
+            const matches = fileName.match(this.regex);
+            if (matches && matches[2]) {
+                if (matches[2] === 'mp3') {
+                    return 'audio/mpeg';
+                } else if (matches[2] === 'wav') {
+                    return 'audio/wav';
+                }
+            }
         }
         return '';
     }
@@ -158,7 +174,12 @@ export class App extends React.Component<{}, AppState> {
                 <Table.Cell>
                     {result.audioUrl && (
                         <audio controls>
-                            <source src={result.audioUrl} type="audio/mpeg" />
+                            <source
+                                src={result.audioUrl}
+                                type={this.getAudioType(
+                                    this.getAudioFileName(result.audioUrl)
+                                )}
+                            />
                         </audio>
                     )}
                 </Table.Cell>
@@ -240,18 +261,23 @@ export class App extends React.Component<{}, AppState> {
         e.persist();
         const files = e.target.files;
         if (files && files.length > 0) {
-            if (!files[0].name.match(/\.mp3$/)) {
+            const matches = files[0].name.match(this.regex);
+            if (!matches) {
                 this.setState({
                     showModal: true,
                     modalHeader: 'File format is not supported.',
-                    modalContent: 'Please upload mp3 file only!',
+                    modalContent: 'Please upload mp3/wav file only!',
                 });
                 return;
             }
+            // add timestamp to prevent duplicate files
+            const fileName = `${matches[1]}_${+new Date()}.${matches[2]}`;
             // get temporary token for S3 uploading
             axios
                 .get<S3.PresignedPost>(
-                    `${stackOutput.ServiceEndpoint}/token?key=${files[0].name}`
+                    `${
+                        stackOutput.ServiceEndpoint
+                    }/token?key=${fileName}&type=${this.getAudioType(fileName)}`
                 )
                 .then(result => {
                     this.setState({

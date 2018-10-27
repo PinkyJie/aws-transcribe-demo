@@ -17,7 +17,7 @@ export const handler = async (
         Bucket: process.env.BUCKET_NAME,
         Fields: {
             key: event.queryStringParameters.key,
-            'Content-Type': 'audio/mpeg',
+            'Content-Type': event.queryStringParameters.type,
         },
         Expires: 900,
     });
