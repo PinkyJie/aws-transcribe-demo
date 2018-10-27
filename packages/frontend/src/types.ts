@@ -5,6 +5,12 @@ export enum AUDIO_PROCESS_STATUS {
     TRANSCRIBE_FAILED = 'TranscribeFailed',
 }
 
+export enum RECORD_STATUS {
+    RECORDING = 'Recording',
+    PAUSED = 'Paused',
+    DONE = 'Done',
+}
+
 export interface AudioRecord {
     id: string;
     status: AUDIO_PROCESS_STATUS;
