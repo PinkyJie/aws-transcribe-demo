@@ -21,6 +21,8 @@ Use your browser to access `http://${BUCKET_NAME_IN_LAST_STEP}.s3-website-${regi
 
 ## Behind the scenes
 
+![](./aws-architecture.png)
+
 - Static website built by React and hosted on S3.
 - Upload audio file via website (click upload button):
   - Call `GetToken` Lambda function via API gateway to get pre-signed URL for Audio File bucket.
