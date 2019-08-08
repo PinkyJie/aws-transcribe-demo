@@ -1,13 +1,13 @@
 const path = require('path');
 const { CheckerPlugin } = require('awesome-typescript-loader');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
     entry: {
-        getAudios: './src/handlers/getAudios.ts',
-        newAudio: './src/handlers/newAudio.ts',
-        transcribeAudio: './src/handlers/transcribeAudio.ts',
-        getToken: './src/handlers/getToken.ts',
+        'getAudios/getAudios': './src/handlers/getAudios.ts',
+        'newAudio/newAudio': './src/handlers/newAudio.ts',
+        'transcribeAudio/transcribeAudio': './src/handlers/transcribeAudio.ts',
+        'getToken/getToken': './src/handlers/getToken.ts',
     },
     output: {
         filename: '[name].js',
@@ -27,6 +27,6 @@ module.exports = {
             },
         ],
     },
-    plugins: [new CleanWebpackPlugin(['dist']), new CheckerPlugin()],
+    plugins: [new CleanWebpackPlugin(), new CheckerPlugin()],
     mode: 'production',
 };

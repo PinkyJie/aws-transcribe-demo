@@ -1,0 +1,3 @@
+{
+  "app": "npx ts-node aws-cdk/index.ts"
+}

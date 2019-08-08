@@ -11,8 +11,8 @@ import {
 } from 'semantic-ui-react';
 import axios from 'axios';
 
-import stackOutput from '../stack.json';
-import { getAudioType, getAudioFileName } from '../utils';
+import { API_PATH_PREFIX } from '../constants';
+import { getAudioType, getFileName } from '../utils';
 import { AudioRecord, TranscriptionJSON } from '../types';
 
 export interface AudioRecordTableProps {}
@@ -88,21 +88,18 @@ export class AudioRecordTable extends React.Component<
     }
 
     private getRow(result: AudioRecord) {
+        const audioFileName = getFileName(result.audioUrl || '');
         return (
             <Table.Row key={result.id}>
                 <Table.Cell>{result.id}</Table.Cell>
-                <Table.Cell>
-                    {getAudioFileName(result.audioUrl || '')}
-                </Table.Cell>
+                <Table.Cell>{audioFileName}</Table.Cell>
                 <Table.Cell>{result.status}</Table.Cell>
                 <Table.Cell>
                     {result.audioUrl && (
                         <audio controls>
                             <source
-                                src={result.audioUrl}
-                                type={getAudioType(
-                                    getAudioFileName(result.audioUrl)
-                                )}
+                                src={`/${audioFileName}`}
+                                type={getAudioType(audioFileName)}
                             />
                         </audio>
                     )}
@@ -185,8 +182,7 @@ export class AudioRecordTable extends React.Component<
         const { searchText } = this.state;
         axios
             .get<AudioRecord[]>(
-                `${stackOutput.ServiceEndpoint}/audios?recordId=${searchText ||
-                    '*'}`
+                `/${API_PATH_PREFIX}/audios?recordId=${searchText || '*'}`
             )
             .then(results => {
                 this.setState({ searchResults: results.data });
@@ -204,7 +200,8 @@ export class AudioRecordTable extends React.Component<
 
     private handleTextOpen(textUrl: string) {
         if (textUrl) {
-            axios.get<TranscriptionJSON>(textUrl).then(result => {
+            const textFileName = getFileName(textUrl);
+            axios.get<TranscriptionJSON>(`/${textFileName}`).then(result => {
                 this.setState({
                     transcription: result.data.results,
                 });

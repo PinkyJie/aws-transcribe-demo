@@ -1,8 +1,8 @@
 export const FILE_EXT_REGEX = /^(.*)\.(mp3|MP3|wav|WAV)$/;
 
-export function getAudioFileName(audioUrl?: string) {
-    if (audioUrl) {
-        const parts = audioUrl.split('/');
+export function getFileName(fileUrl?: string) {
+    if (fileUrl) {
+        const parts = fileUrl.split('/');
         return parts[parts.length - 1];
     }
     return '';

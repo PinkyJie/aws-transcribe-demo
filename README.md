@@ -6,18 +6,18 @@ A simple AWS demo utilizes Amazon Transcribe to convert audio to text and do ana
 
 ## Deploy to your own AWS
 
-- Setup AWS CLI and credential configuration.
-- Deploy AWS architecture:
-  - `cd packages/backend`
-  - Update `region` in `packages/serverless.yml` if required
-  - `yarn deploy`
-- Deploy frontend (make sure deploy frontend after backend cause deployment for frontend depends on output of backend deployment)
-  - `cd packages/frontend`
-  - `yarn build`
-  - check AWS deployment output in `packages/frontend/src/stack.json`, record S3 bucket name for static website (`StaticWebsiteBucketName`)
-  - `aws s3 cp ./build s3://${BUCKET_NAME_IN_LAST_STEP} --recursive`
+- Setup AWS CLI and credential configuration (`aws configure`).
+- Run `yarn` to install all dependencies.
+- Run `yarn build` to build both front end and back end.
+- Run `yarn bootstrap` to initialize AWS CDK deployment.
+- Run `yarn deploy` to do the actual deployment.
 
-Use your browser to access `http://${BUCKET_NAME_IN_LAST_STEP}.s3-website-${region}.amazonaws.com/`
+If the deployment is successful, the cloudfront URL will be displayed in the output like:
+
+```bash
+Outputs:
+AwsTranscribeDemoStack.CloudFrontURL = xxx.cloudfront.net
+```
 
 ## Behind the scenes
 

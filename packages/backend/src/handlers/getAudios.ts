@@ -1,14 +1,9 @@
-import {
-    APIGatewayEventRequestContext,
-    APIGatewayProxyEvent,
-    APIGatewayProxyResult,
-} from 'aws-lambda';
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { DynamoDB, TranscribeService } from 'aws-sdk';
 import { AUDIO_PROCESS_STATUS } from './types';
 
 export const handler = async (
-    event: APIGatewayProxyEvent,
-    context: APIGatewayEventRequestContext
+    event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
     console.log(event);
 
@@ -16,13 +11,15 @@ export const handler = async (
         ? event.queryStringParameters.recordId
         : '*';
 
-    // Creating new record in DynamoDB table
+    const tableName = process.env.DB_TABLE_NAME;
+
+    // Querying records in DynamoDB table
     const dynamoDb = new DynamoDB.DocumentClient();
     let results;
     if (recordId === '*') {
         results = await dynamoDb
             .scan({
-                TableName: process.env.DB_TABLE_NAME,
+                TableName: tableName,
             })
             .promise();
     } else {
@@ -32,7 +29,7 @@ export const handler = async (
                     ':id': recordId,
                 },
                 KeyConditionExpression: 'id = :id',
-                TableName: process.env.DB_TABLE_NAME,
+                TableName: tableName,
             })
             .promise();
     }
@@ -41,48 +38,51 @@ export const handler = async (
     // check the status for each items
     const transcribe = new TranscribeService();
     const newResults = await Promise.all(
-        results.Items.map(async item => {
-            console.log('item:', item);
-            if (item.status === AUDIO_PROCESS_STATUS.PROCESSING) {
-                const job = await transcribe
-                    .getTranscriptionJob({
-                        TranscriptionJobName: item.id,
-                    })
-                    .promise();
-                console.log('job:', job);
-                if (
-                    job.TranscriptionJob.TranscriptionJobStatus !==
-                    'IN_PROGRESS'
-                ) {
-                    const updatedAudio = await dynamoDb
-                        .update({
-                            Key: {
-                                id: item.id,
-                            },
-                            UpdateExpression: 'set #s = :s, textUrl = :t',
-                            ExpressionAttributeNames: {
-                                '#s': 'status',
-                            },
-                            ExpressionAttributeValues: {
-                                ':s':
-                                    job.TranscriptionJob
-                                        .TranscriptionJobStatus === 'COMPLETED'
-                                        ? AUDIO_PROCESS_STATUS.TRANSCRIBED
-                                        : AUDIO_PROCESS_STATUS.TRANSCRIBE_FAILED,
-                                ':t':
-                                    job.TranscriptionJob.Transcript
-                                        .TranscriptFileUri,
-                            },
-                            TableName: process.env.DB_TABLE_NAME,
-                            ReturnValues: 'ALL_NEW',
+        results.Items.map(
+            async (item: DynamoDB.DocumentClient.AttributeMap) => {
+                console.log('item:', item);
+                if (item.status === AUDIO_PROCESS_STATUS.PROCESSING) {
+                    const job = await transcribe
+                        .getTranscriptionJob({
+                            TranscriptionJobName: item.id,
                         })
                         .promise();
-                    console.log('updateAudio:', updatedAudio);
-                    return updatedAudio.Attributes;
+                    console.log('job:', job);
+                    if (
+                        job.TranscriptionJob.TranscriptionJobStatus !==
+                        'IN_PROGRESS'
+                    ) {
+                        const updatedAudio = await dynamoDb
+                            .update({
+                                Key: {
+                                    id: item.id,
+                                },
+                                UpdateExpression: 'set #s = :s, textUrl = :t',
+                                ExpressionAttributeNames: {
+                                    '#s': 'status',
+                                },
+                                ExpressionAttributeValues: {
+                                    ':s':
+                                        job.TranscriptionJob
+                                            .TranscriptionJobStatus ===
+                                        'COMPLETED'
+                                            ? AUDIO_PROCESS_STATUS.TRANSCRIBED
+                                            : AUDIO_PROCESS_STATUS.TRANSCRIBE_FAILED,
+                                    ':t':
+                                        job.TranscriptionJob.Transcript
+                                            .TranscriptFileUri,
+                                },
+                                TableName: tableName,
+                                ReturnValues: 'ALL_NEW',
+                            })
+                            .promise();
+                        console.log('updateAudio:', updatedAudio);
+                        return updatedAudio.Attributes;
+                    }
                 }
+                return Promise.resolve(item);
             }
-            return Promise.resolve(item);
-        })
+        )
     );
 
     return {

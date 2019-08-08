@@ -8,7 +8,7 @@ export function App() {
     return (
         <div className="App">
             <header className="App-header">
-                <h1 className="App-title">Voice Assist Demo</h1>
+                <h1 className="App-title">AWS Transcribe Demo</h1>
             </header>
             <div className="App-body">
                 <UploadAudio />

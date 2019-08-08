@@ -1,18 +1,17 @@
-import * as uuid from 'uuid';
-import {
-    APIGatewayEventRequestContext,
-    APIGatewayProxyEvent,
-    APIGatewayProxyResult,
-} from 'aws-lambda';
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { S3 } from 'aws-sdk';
 
 export const handler = async (
-    event: APIGatewayProxyEvent,
-    context: APIGatewayEventRequestContext
+    event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
     console.log(event);
 
     const s3 = new S3();
+    /**
+     * In order to make sure the presigned data generated can be used
+     * to upload file to bucket, the role for this lambda must have write
+     * access to the bucket.
+     */
     const presignedData = await s3.createPresignedPost({
         Bucket: process.env.BUCKET_NAME,
         Fields: {

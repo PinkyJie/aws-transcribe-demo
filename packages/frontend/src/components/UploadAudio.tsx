@@ -3,7 +3,7 @@ import { Header, Form, Modal } from 'semantic-ui-react';
 import axios from 'axios';
 import { S3 } from 'aws-sdk';
 
-import stackOutput from '../stack.json';
+import { API_PATH_PREFIX } from '../constants';
 import { getAudioType, FILE_EXT_REGEX } from '../utils';
 import { RecordAudio } from './RecordAudio';
 
@@ -84,9 +84,9 @@ export class UploadAudio extends React.Component<
             // get temporary token for S3 uploading
             return axios
                 .get<S3.PresignedPost>(
-                    `${
-                        stackOutput.ServiceEndpoint
-                    }/token?key=${fileName}&type=${getAudioType(fileName)}`
+                    `/${API_PATH_PREFIX}/token?key=${fileName}&type=${getAudioType(
+                        fileName
+                    )}`
                 )
                 .then(result => {
                     this.setState({

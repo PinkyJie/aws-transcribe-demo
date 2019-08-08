@@ -1,15 +1,10 @@
-import {
-    APIGatewayEventRequestContext,
-    APIGatewayProxyResult,
-    SNSEvent,
-} from 'aws-lambda';
+import { APIGatewayProxyResult, SNSEvent } from 'aws-lambda';
 import { DynamoDB, TranscribeService } from 'aws-sdk';
 
 import { AUDIO_PROCESS_STATUS } from './types';
 
 export const handler = async (
-    event: SNSEvent,
-    context: APIGatewayEventRequestContext
+    event: SNSEvent
 ): Promise<APIGatewayProxyResult> => {
     console.log(event.Records[0].Sns);
 
@@ -68,9 +63,7 @@ export const handler = async (
     console.log('updatedItem:', updatedItem);
 
     return {
-        body: `Transcription job submitted: ${
-            job.TranscriptionJob.TranscriptionJobName
-        }`,
+        body: `Transcription job submitted: ${job.TranscriptionJob.TranscriptionJobName}`,
         statusCode: 200,
     };
 };

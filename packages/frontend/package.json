@@ -1,5 +1,5 @@
 {
-  "name": "voice-assist-frontend",
+  "name": "aws-transcribe-demo-frontend",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

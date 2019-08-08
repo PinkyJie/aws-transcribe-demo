@@ -1,14 +1,10 @@
 {
-  "name": "voice-assist-backend",
+  "name": "aws-transcribe-demo-backend",
   "version": "0.1.0",
-  "description": "serverless functions for Voice Assist.",
+  "description": "Lambda functions for AWS Transcribe Demo.",
   "license": "MIT",
   "scripts": {
-    "sls": "serverless",
-    "build": "webpack",
-    "package": "serverless package",
-    "deploy": "serverless deploy -v",
-    "deploy:func": "serverless deploy function -f"
+    "build": "webpack"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.31",
@@ -16,10 +12,6 @@
     "@types/uuid": "^3.4.5",
     "awesome-typescript-loader": "^5.2.1",
     "clean-webpack-plugin": "^3.0.0",
-    "serverless": "^1.49.0",
-    "serverless-offline": "^5.8.0",
-    "serverless-plugin-scripts": "^1.0.2",
-    "serverless-stack-output": "^0.2.3",
     "webpack": "^4.38.0",
     "webpack-cli": "^3.3.6"
   },
