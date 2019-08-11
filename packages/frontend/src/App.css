@@ -17,14 +17,11 @@
   padding: 20px;
 }
 
-.spk_0 {
-  text-align: left;
-}
-
-.spk_1 {
-  text-align: right;
-}
-
 .word:hover {
   background-color: orange;
+}
+
+.error-status {
+  text-decoration: underline;
+  color: red;
 }

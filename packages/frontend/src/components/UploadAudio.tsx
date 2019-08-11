@@ -7,6 +7,19 @@ import { API_PATH_PREFIX } from '../constants';
 import { getAudioType, FILE_EXT_REGEX } from '../utils';
 import { RecordAudio } from './RecordAudio';
 
+const SPEAKERS_COUNT_OPTIONS: Array<{
+    key: string;
+    value: string;
+    text: string;
+}> = [];
+for (let i = 2; i <= 10; i++) {
+    SPEAKERS_COUNT_OPTIONS.push({
+        key: i.toString(),
+        value: i.toString(),
+        text: i.toString(),
+    });
+}
+
 export interface UploadAudioProps {}
 
 export interface UploadAudioState {
@@ -14,6 +27,7 @@ export interface UploadAudioState {
     showModal: boolean;
     modalHeader: string;
     modalContent: string;
+    speakerCount: number;
 }
 
 export class UploadAudio extends React.Component<
@@ -27,6 +41,7 @@ export class UploadAudio extends React.Component<
             showModal: false,
             modalHeader: '',
             modalContent: '',
+            speakerCount: 2,
         };
     }
 
@@ -36,6 +51,14 @@ export class UploadAudio extends React.Component<
             <React.Fragment>
                 <Header as="h2">Upload audio file</Header>
                 <Form loading={uploading}>
+                    <Form.Group inline>
+                        <Form.Select
+                            label="How many speakers (max)?"
+                            options={SPEAKERS_COUNT_OPTIONS}
+                            onChange={this.handleSpeakerCountChange}
+                            value={this.state.speakerCount.toString()}
+                        />
+                    </Form.Group>
                     <Form.Group inline>
                         <Form.Input
                             type="file"
@@ -67,6 +90,15 @@ export class UploadAudio extends React.Component<
         );
     }
 
+    private handleSpeakerCountChange = (
+        e: React.ChangeEvent<HTMLSelectElement>,
+        data: { value: string }
+    ) => {
+        this.setState({
+            speakerCount: Number(data.value),
+        });
+    };
+
     private handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (files && files.length > 0) {
@@ -80,7 +112,9 @@ export class UploadAudio extends React.Component<
                 return;
             }
             // add timestamp to prevent duplicate files
-            const fileName = `${matches[1]}_${+new Date()}.${matches[2]}`;
+            const fileName = `${matches[1]}_${+new Date()}_SPEAKER${
+                this.state.speakerCount
+            }.${matches[2]}`;
             // get temporary token for S3 uploading
             return axios
                 .get<S3.PresignedPost>(

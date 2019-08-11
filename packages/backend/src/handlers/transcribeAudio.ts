@@ -37,7 +37,7 @@ export const handler = async (
             OutputBucketName: process.env.OUTPUT_BUCKET_NAME,
             Settings: {
                 ShowSpeakerLabels: true,
-                MaxSpeakerLabels: 2,
+                MaxSpeakerLabels: audioItem.Item.speakers,
             },
         })
         .promise();

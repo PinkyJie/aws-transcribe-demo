@@ -16,6 +16,8 @@ export interface AudioRecord {
     status: AUDIO_PROCESS_STATUS;
     audioUrl?: string;
     textUrl?: string;
+    error?: string;
+    speakers?: number;
     createdAt: number;
     updatedAt: number;
 }

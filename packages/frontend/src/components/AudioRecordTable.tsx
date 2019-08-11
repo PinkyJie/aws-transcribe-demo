@@ -8,18 +8,33 @@ import {
     Message,
     Popup,
     Button,
+    Modal,
 } from 'semantic-ui-react';
 import axios from 'axios';
 
 import { API_PATH_PREFIX } from '../constants';
 import { getAudioType, getFileName } from '../utils';
-import { AudioRecord, TranscriptionJSON } from '../types';
+import { AudioRecord, TranscriptionJSON, AUDIO_PROCESS_STATUS } from '../types';
+
+const SPEAKER_COLORS = [
+    'teal',
+    'blue',
+    'orange',
+    'yellow',
+    'green',
+    'violet',
+    'purple',
+    'pink',
+    'brown',
+];
 
 export interface AudioRecordTableProps {}
 
 export interface AudioRecordTableState {
     searchText: string;
     searchResults: AudioRecord[];
+    /** the audio file whose transcription is opened */
+    activeAudioFile?: string;
     transcription?: TranscriptionJSON['results'];
 }
 
@@ -36,7 +51,12 @@ export class AudioRecordTable extends React.Component<
     }
 
     public render() {
-        const { searchText, searchResults, transcription } = this.state;
+        const {
+            searchText,
+            searchResults,
+            transcription,
+            activeAudioFile,
+        } = this.state;
         return (
             <React.Fragment>
                 <Header as="h2">Check transcription status</Header>
@@ -72,17 +92,25 @@ export class AudioRecordTable extends React.Component<
                         </Table.Header>
 
                         <Table.Body>
-                            {searchResults.map(result => this.getRow(result))}
+                            {searchResults
+                                .sort((a, b) => b.updatedAt - a.updatedAt)
+                                .map(result => this.getRow(result))}
                         </Table.Body>
                     </Table>
                 )}
-                {transcription && (
-                    <Segment>
+                <Modal
+                    open={!!transcription}
+                    centered={false}
+                    onClose={this.handleModalClose}
+                    closeIcon
+                >
+                    <Modal.Header>{`Transcription for ${activeAudioFile}`}</Modal.Header>
+                    <Modal.Content>
                         <Container className="conversation">
                             {this.formatTranscription(transcription)}
                         </Container>
-                    </Segment>
-                )}
+                    </Modal.Content>
+                </Modal>
             </React.Fragment>
         );
     }
@@ -93,7 +121,21 @@ export class AudioRecordTable extends React.Component<
             <Table.Row key={result.id}>
                 <Table.Cell>{result.id}</Table.Cell>
                 <Table.Cell>{audioFileName}</Table.Cell>
-                <Table.Cell>{result.status}</Table.Cell>
+                <Table.Cell>
+                    {result.status ===
+                    AUDIO_PROCESS_STATUS.TRANSCRIBE_FAILED ? (
+                        <Popup
+                            trigger={
+                                <span className="error-status">
+                                    {result.status}
+                                </span>
+                            }
+                            content={result.error}
+                        />
+                    ) : (
+                        result.status
+                    )}
+                </Table.Cell>
                 <Table.Cell>
                     {result.audioUrl && (
                         <audio controls>
@@ -120,6 +162,9 @@ export class AudioRecordTable extends React.Component<
     }
 
     private formatTranscription(transcription: TranscriptionJSON['results']) {
+        if (!transcription) {
+            return null;
+        }
         const words = transcription.items;
         let wordIndex = 0;
         const speakerSegments = transcription.speaker_labels.segments;
@@ -167,7 +212,11 @@ export class AudioRecordTable extends React.Component<
             return (
                 <Message
                     key={`segment_${segmentIndex}`}
-                    color={segment.speaker_label === 'spk_0' ? 'teal' : 'blue'}
+                    color={
+                        SPEAKER_COLORS[
+                            segment.speaker_label.replace('spk_', '')
+                        ]
+                    }
                     className={segment.speaker_label}
                     size="large"
                 >
@@ -208,4 +257,10 @@ export class AudioRecordTable extends React.Component<
             });
         }
     }
+
+    private handleModalClose = () => {
+        this.setState({
+            transcription: undefined,
+        });
+    };
 }

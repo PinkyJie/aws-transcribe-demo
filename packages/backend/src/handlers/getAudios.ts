@@ -52,26 +52,42 @@ export const handler = async (
                         job.TranscriptionJob.TranscriptionJobStatus !==
                         'IN_PROGRESS'
                     ) {
+                        const isSuccess =
+                            job.TranscriptionJob.TranscriptionJobStatus ===
+                            'COMPLETED';
+                        let updateExpression;
+                        let expressionAttributeValues;
+                        let expressionAttributeNames;
+                        if (isSuccess) {
+                            expressionAttributeNames = {
+                                '#s': 'status',
+                            };
+                            updateExpression = 'set #s = :s, textUrl = :t';
+                            expressionAttributeValues = {
+                                ':s': AUDIO_PROCESS_STATUS.TRANSCRIBED,
+                                ':t':
+                                    job.TranscriptionJob.Transcript
+                                        .TranscriptFileUri,
+                            };
+                        } else {
+                            expressionAttributeNames = {
+                                '#s': 'status',
+                                '#e': 'error',
+                            };
+                            updateExpression = 'set #s = :s, #e = :e';
+                            expressionAttributeValues = {
+                                ':s': AUDIO_PROCESS_STATUS.TRANSCRIBE_FAILED,
+                                ':e': job.TranscriptionJob.FailureReason,
+                            };
+                        }
                         const updatedAudio = await dynamoDb
                             .update({
                                 Key: {
                                     id: item.id,
                                 },
-                                UpdateExpression: 'set #s = :s, textUrl = :t',
-                                ExpressionAttributeNames: {
-                                    '#s': 'status',
-                                },
-                                ExpressionAttributeValues: {
-                                    ':s':
-                                        job.TranscriptionJob
-                                            .TranscriptionJobStatus ===
-                                        'COMPLETED'
-                                            ? AUDIO_PROCESS_STATUS.TRANSCRIBED
-                                            : AUDIO_PROCESS_STATUS.TRANSCRIBE_FAILED,
-                                    ':t':
-                                        job.TranscriptionJob.Transcript
-                                            .TranscriptFileUri,
-                                },
+                                UpdateExpression: updateExpression,
+                                ExpressionAttributeNames: expressionAttributeNames,
+                                ExpressionAttributeValues: expressionAttributeValues,
                                 TableName: tableName,
                                 ReturnValues: 'ALL_NEW',
                             })

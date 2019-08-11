@@ -4,6 +4,8 @@ import { APIGatewayProxyResult, S3Event } from 'aws-lambda';
 
 import { AUDIO_PROCESS_STATUS } from './types';
 
+export const SPEAKER_COUNT_REGEX = /^(.*)_SPEAKER(\d+)\.(mp3|MP3|wav|WAV)$/;
+
 export const handler = async (
     event: S3Event
 ): Promise<APIGatewayProxyResult> => {
@@ -24,6 +26,7 @@ export const handler = async (
             Item: {
                 id: recordId,
                 status: AUDIO_PROCESS_STATUS.UPLOADED,
+                speakers: Number(fileName.match(SPEAKER_COUNT_REGEX)[2]),
                 audioUrl: `https://s3-${region}.amazonaws.com/${bucketName}/${fileName}`,
                 createdAt: timestamp,
                 updatedAt: timestamp,

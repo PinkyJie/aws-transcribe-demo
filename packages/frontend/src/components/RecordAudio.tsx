@@ -106,7 +106,9 @@ export class RecordAudio extends React.Component<
                     this.mediaRecorder.addEventListener(
                         'stop',
                         (event: any) => {
-                            const audioBlob = new Blob(recordData);
+                            const audioBlob = new Blob(recordData, {
+                                type: 'audio/wav',
+                            });
                             const audioUrl = URL.createObjectURL(audioBlob);
                             this.setState({
                                 recordedAudioURL: audioUrl,
