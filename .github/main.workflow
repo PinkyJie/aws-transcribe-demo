@@ -3,14 +3,14 @@ workflow "AWS Deploy" {
   resolves = ["Deploy"]
 }
 
-action "Install depdendencies" {
+action "Install dependencies" {
   uses = "actions/npm@59b64a598378f31e49cb76f27d6f3312b582f680"
   runs = "yarn"
 }
 
 action "Build" {
   uses = "actions/npm@59b64a598378f31e49cb76f27d6f3312b582f680"
-  needs = ["Install depdendencies"]
+  needs = ["Install dependencies"]
   runs = "yarn"
   args = "build"
 }
