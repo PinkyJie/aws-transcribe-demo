@@ -15,7 +15,7 @@
     "cdk": "cdk",
     "build": "lerna run build",
     "bootstrap": "cdk bootstrap",
-    "deploy": "cdk deploy",
+    "deploy": "cdk deploy AwsTranscribeDemoStack",
     "debug": "ts-node aws-cdk/index.ts",
     "gen:cfn": "cdk synth > cfn.yml"
   },

@@ -1,9 +1,9 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import { APIGatewayProxyHandler } from 'aws-lambda';
 import { S3 } from 'aws-sdk';
 
-export const handler = async (
-    event: APIGatewayProxyEvent
-): Promise<APIGatewayProxyResult> => {
+import { commonCORSHeader } from '../constants';
+
+export const handler: APIGatewayProxyHandler = async event => {
     console.log(event);
 
     const s3 = new S3();
@@ -25,10 +25,7 @@ export const handler = async (
 
     return {
         body: JSON.stringify(presignedData),
-        headers: {
-            'Access-Control-Allow-Origin': '*', // Required for CORS support to work
-            'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
-        },
+        headers: commonCORSHeader,
         statusCode: 200,
     };
 };

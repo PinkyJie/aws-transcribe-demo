@@ -2,7 +2,7 @@ import cdk = require('@aws-cdk/core');
 import s3 = require('@aws-cdk/aws-s3');
 import s3Deployment = require('@aws-cdk/aws-s3-deployment');
 
-const WEBSITE_DIST_FOLDER = './packages/frontend/build';
+import { WEBSITE_DIST_FOLDER } from '../constants';
 
 export class S3Buckets extends cdk.Construct {
     public readonly staticWebsiteBucket: s3.Bucket;

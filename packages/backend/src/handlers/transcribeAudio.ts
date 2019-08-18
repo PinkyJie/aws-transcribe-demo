@@ -1,12 +1,11 @@
-import { APIGatewayProxyResult, SNSEvent } from 'aws-lambda';
+import { SNSHandler } from 'aws-lambda';
 import { DynamoDB, TranscribeService } from 'aws-sdk';
 
-import { AUDIO_PROCESS_STATUS } from './types';
+import { AUDIO_PROCESS_STATUS } from '../types';
 
-export const handler = async (
-    event: SNSEvent
-): Promise<APIGatewayProxyResult> => {
+export const handler: SNSHandler = async event => {
     console.log(event.Records[0].Sns);
+    const { DB_TABLE_NAME, OUTPUT_BUCKET_NAME } = process.env;
 
     const recordId = event.Records[0].Sns.Message;
 
@@ -17,7 +16,7 @@ export const handler = async (
             Key: {
                 id: recordId,
             },
-            TableName: process.env.DB_TABLE_NAME,
+            TableName: DB_TABLE_NAME,
         })
         .promise();
     console.log('audioItem:', audioItem);
@@ -34,7 +33,7 @@ export const handler = async (
             Media: {
                 MediaFileUri: audioItem.Item.audioUrl,
             },
-            OutputBucketName: process.env.OUTPUT_BUCKET_NAME,
+            OutputBucketName: OUTPUT_BUCKET_NAME,
             Settings: {
                 ShowSpeakerLabels: true,
                 MaxSpeakerLabels: audioItem.Item.speakers,
@@ -56,14 +55,9 @@ export const handler = async (
             ExpressionAttributeNames: {
                 '#s': 'status',
             },
-            TableName: process.env.DB_TABLE_NAME,
+            TableName: DB_TABLE_NAME,
             ReturnValues: 'ALL_NEW',
         })
         .promise();
     console.log('updatedItem:', updatedItem);
-
-    return {
-        body: `Transcription job submitted: ${job.TranscriptionJob.TranscriptionJobName}`,
-        statusCode: 200,
-    };
 };

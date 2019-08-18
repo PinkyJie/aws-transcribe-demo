@@ -1,15 +1,14 @@
 import * as uuid from 'uuid';
 import { DynamoDB, SNS } from 'aws-sdk';
-import { APIGatewayProxyResult, S3Event } from 'aws-lambda';
+import { S3Handler } from 'aws-lambda';
 
-import { AUDIO_PROCESS_STATUS } from './types';
+import { AUDIO_PROCESS_STATUS } from '../types';
 
 export const SPEAKER_COUNT_REGEX = /^(.*)_SPEAKER(\d+)\.(mp3|MP3|wav|WAV)$/;
 
-export const handler = async (
-    event: S3Event
-): Promise<APIGatewayProxyResult> => {
+export const handler: S3Handler = async event => {
     console.log(event.Records[0].s3);
+    const { DB_TABLE_NAME, SNS_TOPIC } = process.env;
 
     const region = event.Records[0].awsRegion;
     const bucketName = event.Records[0].s3.bucket.name;
@@ -22,7 +21,7 @@ export const handler = async (
     const dynamoDb = new DynamoDB.DocumentClient();
     await dynamoDb
         .put({
-            TableName: process.env.DB_TABLE_NAME,
+            TableName: DB_TABLE_NAME,
             Item: {
                 id: recordId,
                 status: AUDIO_PROCESS_STATUS.UPLOADED,
@@ -39,12 +38,7 @@ export const handler = async (
     await sns
         .publish({
             Message: recordId,
-            TopicArn: process.env.SNS_TOPIC,
+            TopicArn: SNS_TOPIC,
         })
         .promise();
-
-    return {
-        statusCode: 200,
-        body: JSON.stringify({ id: recordId }),
-    };
 };

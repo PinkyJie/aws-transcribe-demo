@@ -8,9 +8,11 @@ import {
     S3EventSource,
     SnsEventSource,
 } from '@aws-cdk/aws-lambda-event-sources';
-import { SUPPORTED_AUDIO_SUFFIX } from './constants';
 
-const LAMBDA_FUNCTIONS_DIST_FOLDER = './packages/backend/dist/';
+import {
+    SUPPORTED_AUDIO_SUFFIX,
+    LAMBDA_FUNCTIONS_DIST_FOLDER,
+} from '../constants';
 
 export interface LambdaFunctionsProps {
     audioFileBucket: s3.Bucket;

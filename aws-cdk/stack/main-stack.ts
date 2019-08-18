@@ -1,15 +1,22 @@
 import cdk = require('@aws-cdk/core');
 
-import { S3Buckets } from './s3';
-import { DBTables } from './dynamodb';
-import { SNSTopics } from './sns';
-import { LambdaFunctions } from './lambda';
-import { APIGateways } from './apigateway';
-import { CloudFronts } from './cloudfront';
-import { TAGS } from './constants';
+import { S3Buckets } from '../lib/s3';
+import { DBTables } from '../lib/dynamodb';
+import { SNSTopics } from '../lib/sns';
+import { LambdaFunctions } from '../lib/lambda';
+import { APIGateways } from '../lib/apigateway';
+import { CloudFronts } from '../lib/cloudfront';
+import { CrossRegionCfnCustomResource } from '../lib/custom-resource';
+import {
+    LAMBDA_EDGE_STACK_NAME,
+    LAMBDA_EDGE_ARN_OUTPUT_NAME,
+    LAMBDA_EDGE_VERSION_OUTPUT_NAME,
+} from '../constants';
 
-export class AwsTranscribeDemoStack extends cdk.Stack {
-    constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
+export interface MainStackProps extends cdk.StackProps {}
+
+export class MainStack extends cdk.Stack {
+    constructor(scope: cdk.App, id: string, props: MainStackProps) {
         super(scope, id, props);
 
         const s3Buckets = new S3Buckets(this, 'AllS3Buckets');
@@ -36,16 +43,23 @@ export class AwsTranscribeDemoStack extends cdk.Stack {
             getAudiosFunc: lambdaFunctions.getAudiosFunc,
         });
 
+        const customResource = new CrossRegionCfnCustomResource(
+            this,
+            'AllCustomResource',
+            {
+                lambdaEdgeStackName: LAMBDA_EDGE_STACK_NAME,
+                lambdaEdgeArnOutputName: LAMBDA_EDGE_ARN_OUTPUT_NAME,
+                lambdaEdgeVersionOutputName: LAMBDA_EDGE_VERSION_OUTPUT_NAME,
+            }
+        );
+
         const cloudfronts = new CloudFronts(this, 'AllCloudFronts', {
             staticWebsiteBucket: s3Buckets.staticWebsiteBucket,
             audioFileBucket: s3Buckets.audioFileBucket,
             transcribedTextFileBucket: s3Buckets.transcribedTextFileBucket,
             backendAPIGateway: apiGateways.api,
-        });
-
-        // add Tags
-        Object.keys(TAGS).forEach(key => {
-            this.node.applyAspect(new cdk.Tag(key, TAGS[key]));
+            lambdaEdgeArn: customResource.lambdaEdgeOutput.arn,
+            lambdaEdgeVersion: customResource.lambdaEdgeOutput.version,
         });
 
         // tslint:disable-next-line: no-unused-expression

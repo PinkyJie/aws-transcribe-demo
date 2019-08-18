@@ -1,7 +1,8 @@
 import cdk = require('@aws-cdk/core');
 import lambda = require('@aws-cdk/aws-lambda');
 import apiGateway = require('@aws-cdk/aws-apigateway');
-import { API_PATH_PREFIX } from './constants';
+
+import { API_PATH_PREFIX } from '../constants';
 
 export interface APIGatewayProps {
     getUploadTokenFunc: lambda.Function;

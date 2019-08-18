@@ -8,6 +8,7 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.31",
+    "@types/cfn-response": "^1.0.0",
     "@types/node": "^12.6.8",
     "@types/uuid": "^3.4.5",
     "awesome-typescript-loader": "^5.2.1",
@@ -18,6 +19,7 @@
   "dependencies": {
     "aws-lambda": "^0.1.2",
     "aws-sdk": "^2.502.0",
+    "cfn-response": "^1.0.1",
     "uuid": "^3.3.2"
   }
 }

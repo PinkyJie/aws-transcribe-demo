@@ -1215,10 +1215,17 @@
   resolved "https://registry.yarnpkg.com/@types/anymatch/-/anymatch-1.3.1.tgz#336badc1beecb9dacc38bea2cf32adf627a8421a"
   integrity sha512-/+CRPXpBDpo2RK9C68N3b2cOvO0Cf5B9aPijHsoDQTHivnGSObdOF2BRQOYjojWTDy6nQvMjmqRXIxH55VjxxA==
 
-"@types/aws-lambda@^8.10.31":
+"@types/aws-lambda@*", "@types/aws-lambda@^8.10.31":
   version "8.10.31"
   resolved "https://registry.yarnpkg.com/@types/aws-lambda/-/aws-lambda-8.10.31.tgz#f34c42412e59824efa21717c71024f7d04405b51"
   integrity sha512-xcmOvzVILQoex1oR+vjKnBP3OJn+g92r3yVzeTSmRgLQwBvSOghRPRSx3rVMQivLzAIR6atxlVu3AV9bxc/hQw==
+
+"@types/cfn-response@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@types/cfn-response/-/cfn-response-1.0.0.tgz#34161fea88b54390ffceb94a61ccc074874e5b27"
+  integrity sha512-9rbplc6F0CXdMgnO4kw54gAkL7D1Zzpv81oz19EGRAd6LVsjPoWoGPXq31vPSxAIE3VD2uqxThgJNzYoTgWhOQ==
+  dependencies:
+    "@types/aws-lambda" "*"
 
 "@types/events@*":
   version "3.0.0"
@@ -3318,6 +3325,11 @@ center-align@^0.1.1:
   dependencies:
     align-text "^0.1.3"
     lazy-cache "^1.0.3"
+
+cfn-response@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/cfn-response/-/cfn-response-1.0.1.tgz#a8ec03950c0683c51495e8ca680d9dc0b884b137"
+  integrity sha1-qOwDlQwGg8UUlejKaA2dwLiEsTc=
 
 chalk@1.1.3, chalk@^1.0.0, chalk@^1.1.3:
   version "1.1.3"

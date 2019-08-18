@@ -1,17 +1,16 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import { APIGatewayProxyHandler } from 'aws-lambda';
 import { DynamoDB, TranscribeService } from 'aws-sdk';
-import { AUDIO_PROCESS_STATUS } from './types';
 
-export const handler = async (
-    event: APIGatewayProxyEvent
-): Promise<APIGatewayProxyResult> => {
+import { AUDIO_PROCESS_STATUS } from '../types';
+import { commonCORSHeader } from '../constants';
+
+export const handler: APIGatewayProxyHandler = async event => {
     console.log(event);
+    const { DB_TABLE_NAME } = process.env;
 
     const recordId = event.queryStringParameters
         ? event.queryStringParameters.recordId
         : '*';
-
-    const tableName = process.env.DB_TABLE_NAME;
 
     // Querying records in DynamoDB table
     const dynamoDb = new DynamoDB.DocumentClient();
@@ -19,7 +18,7 @@ export const handler = async (
     if (recordId === '*') {
         results = await dynamoDb
             .scan({
-                TableName: tableName,
+                TableName: DB_TABLE_NAME,
             })
             .promise();
     } else {
@@ -29,7 +28,7 @@ export const handler = async (
                     ':id': recordId,
                 },
                 KeyConditionExpression: 'id = :id',
-                TableName: tableName,
+                TableName: DB_TABLE_NAME,
             })
             .promise();
     }
@@ -88,7 +87,7 @@ export const handler = async (
                                 UpdateExpression: updateExpression,
                                 ExpressionAttributeNames: expressionAttributeNames,
                                 ExpressionAttributeValues: expressionAttributeValues,
-                                TableName: tableName,
+                                TableName: DB_TABLE_NAME,
                                 ReturnValues: 'ALL_NEW',
                             })
                             .promise();
@@ -103,10 +102,7 @@ export const handler = async (
 
     return {
         body: JSON.stringify(newResults),
-        headers: {
-            'Access-Control-Allow-Origin': '*', // Required for CORS support to work
-            'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
-        },
+        headers: commonCORSHeader,
         statusCode: 200,
     };
 };

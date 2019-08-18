@@ -1,20 +1,23 @@
 import cdk = require('@aws-cdk/core');
 import s3 = require('@aws-cdk/aws-s3');
+import lambda = require('@aws-cdk/aws-lambda');
 import apiGateway = require('@aws-cdk/aws-apigateway');
 import cloudfront = require('@aws-cdk/aws-cloudfront');
 import iam = require('@aws-cdk/aws-iam');
 
 import {
     API_PATH_PREFIX,
-    SUPPORTED_AUDIO_SUFFIX,
-    TRANSCRIBED_TEXT_SUFFIX,
-} from './constants';
+    AUDIO_FILE_URL_PREFIX,
+    TRANSCRIBED_TEXT_FILE_URL_PREFIX,
+} from '../constants';
 
 export interface CloudFrontProps {
     staticWebsiteBucket: s3.Bucket;
     audioFileBucket: s3.Bucket;
     transcribedTextFileBucket: s3.Bucket;
     backendAPIGateway: apiGateway.RestApi;
+    lambdaEdgeArn: string;
+    lambdaEdgeVersion: string;
 }
 
 export class CloudFronts extends cdk.Construct {
@@ -32,6 +35,22 @@ export class CloudFronts extends cdk.Construct {
                 },
             }
         );
+
+        const modifyS3PathLambdaAssociation: cloudfront.LambdaFunctionAssociation = {
+            eventType: cloudfront.LambdaEdgeEventType.ORIGIN_REQUEST,
+            lambdaFunction: lambda.Version.fromVersionAttributes(
+                scope,
+                'ModifyS3PathLambdaEdgeVersion',
+                {
+                    version: props.lambdaEdgeVersion,
+                    lambda: lambda.Function.fromFunctionArn(
+                        scope,
+                        'ModifyS3PathLambdaEdgeFunc',
+                        props.lambdaEdgeArn
+                    ),
+                }
+            ),
+        };
 
         const apiGatewayURL = props.backendAPIGateway.url;
         this.cloudfront = new cloudfront.CloudFrontWebDistribution(
@@ -65,9 +84,14 @@ export class CloudFronts extends cdk.Construct {
                             s3BucketSource: props.audioFileBucket,
                             originAccessIdentityId: originAccessIdentity.ref,
                         },
-                        behaviors: SUPPORTED_AUDIO_SUFFIX.map(suffix => ({
-                            pathPattern: `/*${suffix}`,
-                        })),
+                        behaviors: [
+                            {
+                                pathPattern: `/${AUDIO_FILE_URL_PREFIX}/*`,
+                                lambdaFunctionAssociations: [
+                                    modifyS3PathLambdaAssociation,
+                                ],
+                            },
+                        ],
                     },
                     {
                         s3OriginSource: {
@@ -76,7 +100,10 @@ export class CloudFronts extends cdk.Construct {
                         },
                         behaviors: [
                             {
-                                pathPattern: `/*${TRANSCRIBED_TEXT_SUFFIX}`,
+                                pathPattern: `/${TRANSCRIBED_TEXT_FILE_URL_PREFIX}/*`,
+                                lambdaFunctionAssociations: [
+                                    modifyS3PathLambdaAssociation,
+                                ],
                             },
                         ],
                     },

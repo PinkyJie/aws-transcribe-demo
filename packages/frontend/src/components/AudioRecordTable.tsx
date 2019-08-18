@@ -12,7 +12,11 @@ import {
 } from 'semantic-ui-react';
 import axios from 'axios';
 
-import { API_PATH_PREFIX } from '../constants';
+import {
+    API_PATH_PREFIX,
+    TRANSCRIBED_TEXT_FILE_URL_PREFIX,
+    AUDIO_FILE_URL_PREFIX,
+} from '../constants';
 import { getAudioType, getFileName } from '../utils';
 import { AudioRecord, TranscriptionJSON, AUDIO_PROCESS_STATUS } from '../types';
 
@@ -140,7 +144,7 @@ export class AudioRecordTable extends React.Component<
                     {result.audioUrl && (
                         <audio controls>
                             <source
-                                src={`/${audioFileName}`}
+                                src={`/${AUDIO_FILE_URL_PREFIX}/${audioFileName}`}
                                 type={getAudioType(audioFileName)}
                             />
                         </audio>
@@ -250,11 +254,15 @@ export class AudioRecordTable extends React.Component<
     private handleTextOpen(textUrl: string) {
         if (textUrl) {
             const textFileName = getFileName(textUrl);
-            axios.get<TranscriptionJSON>(`/${textFileName}`).then(result => {
-                this.setState({
-                    transcription: result.data.results,
+            axios
+                .get<TranscriptionJSON>(
+                    `/${TRANSCRIBED_TEXT_FILE_URL_PREFIX}/${textFileName}`
+                )
+                .then(result => {
+                    this.setState({
+                        transcription: result.data.results,
+                    });
                 });
-            });
         }
     }
 
