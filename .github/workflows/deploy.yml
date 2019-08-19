@@ -3,7 +3,9 @@ name: Deploy to AWS
 on:
   push:
     branches:
-    - master
+      - master
+    paths:
+      - "!*.md"
 
 jobs:
   build_deploy:

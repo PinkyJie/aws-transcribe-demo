@@ -1,6 +1,6 @@
 # AWS Transcribe demo
 
-A simple AWS demo utilizes Amazon Transcribe to convert audio to text and do analyze.
+A simple AWS demo utilizes Amazon Transcribe to convert audio to text and do analyze. [Demo site](https://d3hk9i6re8qnvi.cloudfront.net/)
 
 ![](./frontend.png)
 
@@ -18,6 +18,14 @@ If the deployment is successful, the cloudfront URL will be displayed in the out
 Outputs:
 AwsTranscribeDemoStack.CloudFrontURL = xxx.cloudfront.net
 ```
+
+## CI/CD with Github Actions
+
+- Sign up [Github Actions](https://github.com/features/actions) as a beta user.
+- Save your AWS credential and region in Github repo's secret (`[YOUR_REPO_URL]/settings/secrets`)
+  - `AWS_DEFAULT_REGION`: region name
+  - `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+- Every push will trigger a build/deploy to AWS, check your repo's "Actions" tab for details.
 
 ## Behind the scenes
 
