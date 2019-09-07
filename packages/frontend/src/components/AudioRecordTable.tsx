@@ -260,6 +260,7 @@ export class AudioRecordTable extends React.Component<
                 )
                 .then(result => {
                     this.setState({
+                        activeAudioFile: textFileName,
                         transcription: result.data.results,
                     });
                 });
@@ -268,6 +269,7 @@ export class AudioRecordTable extends React.Component<
 
     private handleModalClose = () => {
         this.setState({
+            activeAudioFile: undefined,
             transcription: undefined,
         });
     };
