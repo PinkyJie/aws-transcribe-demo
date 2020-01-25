@@ -33,23 +33,21 @@ export interface TranscriptionJSON {
     accountId: number;
     status: string;
     results: {
-        transcripts: Array<{ transcript: string }>;
+        transcripts: { transcript: string }[];
         speaker_labels: {
             speakers: number;
-            segments: Array<
-                SpeakerSegment & {
-                    items: SpeakerSegment[];
-                }
-            >;
+            segments: (SpeakerSegment & {
+                items: SpeakerSegment[];
+            })[];
         };
-        items: Array<{
+        items: {
             start_time?: string;
             end_time?: string;
             type: string;
-            alternatives: Array<{
+            alternatives: {
                 confidence: string | null;
                 content: string;
-            }>;
-        }>;
+            }[];
+        }[];
     };
 }

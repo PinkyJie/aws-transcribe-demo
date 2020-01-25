@@ -7,11 +7,11 @@ import { API_PATH_PREFIX } from '../constants';
 import { getAudioType, FILE_EXT_REGEX } from '../utils';
 import { RecordAudio } from './RecordAudio';
 
-const SPEAKERS_COUNT_OPTIONS: Array<{
+const SPEAKERS_COUNT_OPTIONS: {
     key: string;
     value: string;
     text: string;
-}> = [];
+}[] = [];
 for (let i = 2; i <= 10; i++) {
     SPEAKERS_COUNT_OPTIONS.push({
         key: i.toString(),
