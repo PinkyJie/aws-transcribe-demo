@@ -27,7 +27,7 @@ export class S3Buckets extends cdk.Construct {
         // deploy frontend
         // tslint:disable-next-line: no-unused-expression
         new s3Deployment.BucketDeployment(scope, 'DeployWebsite', {
-            source: s3Deployment.Source.asset(WEBSITE_DIST_FOLDER),
+            sources: [s3Deployment.Source.asset(WEBSITE_DIST_FOLDER)],
             destinationBucket: this.staticWebsiteBucket,
         });
     }

@@ -26,13 +26,11 @@ export class CloudFronts extends cdk.Construct {
     constructor(scope: cdk.Construct, id: string, props: CloudFrontProps) {
         super(scope, id);
 
-        const originAccessIdentity = new cloudfront.CfnCloudFrontOriginAccessIdentity(
+        const originAccessIdentity = new cloudfront.OriginAccessIdentity(
             scope,
             'OriginAccessIdentityForAWSTranscribeCloudFront',
             {
-                cloudFrontOriginAccessIdentityConfig: {
-                    comment: 'OAI for AWSTranscribeDemo',
-                },
+                comment: 'OAI for AWSTranscribeDemo',
             }
         );
 
@@ -61,7 +59,7 @@ export class CloudFronts extends cdk.Construct {
                     {
                         s3OriginSource: {
                             s3BucketSource: props.staticWebsiteBucket,
-                            originAccessIdentityId: originAccessIdentity.ref,
+                            originAccessIdentity,
                         },
                         behaviors: [
                             {
@@ -82,7 +80,7 @@ export class CloudFronts extends cdk.Construct {
                     {
                         s3OriginSource: {
                             s3BucketSource: props.audioFileBucket,
-                            originAccessIdentityId: originAccessIdentity.ref,
+                            originAccessIdentity,
                         },
                         behaviors: [
                             {
@@ -96,7 +94,7 @@ export class CloudFronts extends cdk.Construct {
                     {
                         s3OriginSource: {
                             s3BucketSource: props.transcribedTextFileBucket,
-                            originAccessIdentityId: originAccessIdentity.ref,
+                            originAccessIdentity,
                         },
                         behaviors: [
                             {
@@ -150,7 +148,7 @@ export class CloudFronts extends cdk.Construct {
             policyStatement.addActions('s3:GetObject');
             policyStatement.addResources(`${sourceBucket.bucketArn}/*`);
             policyStatement.addCanonicalUserPrincipal(
-                originAccessIdentity.attrS3CanonicalUserId
+                originAccessIdentity.cloudFrontOriginAccessIdentityS3CanonicalUserId
             );
             sourceBucket.addToResourcePolicy(policyStatement);
         });
