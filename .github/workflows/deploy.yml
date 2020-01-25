@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - master
-    paths:
-      - "!*.md"
 
 jobs:
   build_deploy:
@@ -14,19 +12,19 @@ jobs:
       matrix:
         node-version: [10.x]
     steps:
-    - uses: actions/checkout@master
-    - uses: actions/setup-node@v1
-    - name: Install yarn
-      run: npm install -g yarn
-    - name: Install dependencies
-      run: yarn install
-    - name: Build
-      run: yarn build
-    - name: Deploy
-      run: |
-        yarn bootstrap
-        yarn deploy
-      env:
-        AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - uses: actions/checkout@master
+      - uses: actions/setup-node@v1
+      - name: Install yarn
+        run: npm install -g yarn
+      - name: Install dependencies
+        run: yarn install
+      - name: Build
+        run: yarn build
+      - name: Deploy
+        run: |
+          yarn bootstrap
+          yarn deploy
+        env:
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
